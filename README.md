@@ -39,30 +39,17 @@
   * 下載jdk1.8
   * 解壓縮
   ```js
-  tar zxvf jdk-8u251-linux-x64.tar.gz
+  tar zxvf "java檔名"
   ```
-  * 把資料夾移動到home目錄
+  * 把JAVA資料夾移動到home目錄
   ```js
-  mv jdk1.8.0_251 ~/
+  mv java檔名 ~/
   ```
   * 設定 `~/.bashrc` 檔
     ```js
-    #找到這幾行
-    
-    # enable programmable completion features (you don't need to enable
-    # this, if it's already enabled in /etc/bash.bashrc and /etc/profile
-    # sources /etc/bash.bashrc).
-    if ! shopt -oq posix; then
-      if [ -f /usr/share/bash-completion/bash_completion ]; then
-        . /usr/share/bash-completion/bash_completion
-      elif [ -f /etc/bash_completion ]; then
-        . /etc/bash_completion
-      fi
-    fi
-    
-
-    export JAVA_HOME=/home/{username}/jdk1.8.0_251   #加上這兩行 (注意路徑)
-    export PATH=$JAVA_HOME/bin:$PATH            #加上這兩行
+    #安裝JAVA後,給JAVA_HOME路徑
+    export JAVA_HOME=/home/{username}/jdk1.8.0_251   
+    export PATH=$JAVA_HOME/bin:$PATH            
     ```
   * 執行~/.bashrc檔 `source ~/.bashrc`
   * 測試 
@@ -73,52 +60,46 @@
 * 安裝hadoop
   * 解壓縮
   ```js
-  tar zxvf hadoop-2.10.0.tar.gz
+  tar zxvf "hadoop檔案"
   ```
   * 移動到 home目錄
   ```js
-  mv hadoop-2.10.0 ~/
+  mv "hadoop檔案" ~/
   ```
   * 修改 `core-site.xml` 檔
   ```js
-  cd ~
-  cd hadoop-2.10.0/etc/hadoop/
   vim core-site.xml
   ```
-  * 找到下面:
+  * 在最下方:
   ```js
   <!-- Put site-specific property overrides in this file. -->
-
+  # 刪除以下
   <configuration>
-  </configuration>           
+  </configuration>    
   ```
-  * 覆蓋  
-      <name>fs.defaultFS</name>  (設定HDFS登入位置，port號為9000)  
-      <name>hadoop.tmp.dir</name>  (設定保存臨時文件位置，預設是/tmp/hadoop-hadoop)  
-      ex:  
-     ```js
-     <configuration>
-          <property>
-               <name>hadoop.tmp.dir</name>
-               <value>/home/hadoop/tmp</value>
-               <description>Abase for other temporary directories.</description>
-          </property>
-          <property>
-               <name>fs.defaultFS</name>
-               <value>hdfs://{主機}:9000</value>  #注意路徑
-          </property>
-     </configuration>
+  *複製以下:
+  ```js
+  <configuration>
+        <property>
+                <name>fs.defaultFS</name>(設定HDFS登入位置，port號為9000)
+                <value>hdfs://master:9000</value>
+        </property>
+        <property>
+                <name>hadoop.tmp.dir</name>(保存臨時文件的位置,預設是/tmp/hadoop-hadoop)
+                <value>file:/usr/local/hadoop/tmp</value>
+                <description>Abase for other temporary directories.</descripti>
+        </property>
+   </configuration>  
      ```
 
    * 修改 `hdfs-site.xml` 檔
      ```js
-     cd ~/hadoop-2.10.0/etc/hadoop/
      vim hdfs-site.xml
      ```
-  * 一樣修改   
+  * 貼上   
     <name>dfs.namenode.secondary.http-address</name>  主要是設定Name Node欲保存的Metadata之儲存目錄    
     <name>dfs.datanode.data.dir</name> Data Node欲保存的資料之儲存目錄  
-    <name>dfs.replication</name>  儲存資料之副本數  
+    <name>dfs.replication</name>  儲存資料之副本數(datanode要幾個)
     ex:  
      ```js
      <configuration>
@@ -140,9 +121,9 @@
            </property>
      </configuration>
      ```
-  * 修改`slave` 檔，加上所有slave的名稱 :
+  * 修改`slave` 檔，加上想要有datanode的主機名稱 (若hadoop3版以上,讀取則為worker檔,非slave):
      ```js
-     master
+     master # 通常主機只會有namenode,從機只有datanode
      slave1
      slave2
      ```
@@ -156,13 +137,17 @@
   ```
   * 修改 `hadoop-env.sh` 檔，在底下添加:
     ```js
-    export JAVA_HOME=/home/spark/jdk1.8.0_251  #注意路徑
+    export JAVA_HOME=/home/spark/jdk1.8.0_251  #JAVA路徑一定得貼上
     export PATH=$JAVA_HOME/bin:$PATH
 
-    export HADOOP_HOME=/home/spark/hadoop-2.10.0
+    export HADOOP_HOME=/home/spark/hadoop-2.10.0 #可加可不加
     export PATH=$HADOOP_HOME/bin:$PATH
 
-    export HADOOP_CONF_DIR=$HADOOP_HOME/etc/hadoop  
+    export HADOOP_CONF_DIR=$HADOOP_HOME/etc/hadoop  #可加可不加
+    
+    # hadoop 3版可能會遇到 start之後 可能出現 ERROR: Cannot set priority of datanode process 3340
+    HADOOP_SHELL_EXECNAME=root  # 加上這段以root執行,預設為 HADOOP_SHELL_EXECNAME='hdfs'
+    
     ```
   * 修改`~/.bashrc`檔，底下添加:(記得source)
     ```js
@@ -172,6 +157,7 @@
     export HADOOP_CONF_DIR=$HADOOP_HOME/etc/hadoop
     ```
   * 建立需要的資料夾(hadoop/tmp 還有hdfs/namenode、datanode)
+  #可建可不建,格式化會自動建立(hadoop namenode format)
   ```js
   cd ~
   mkdir tmp
