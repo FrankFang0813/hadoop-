@@ -87,7 +87,7 @@
         <property>
                 <name>hadoop.tmp.dir</name>(保存臨時文件的位置,預設是/tmp/hadoop-hadoop)
                 <value>file:/usr/local/hadoop/tmp</value>
-                <description>Abase for other temporary directories.</descripti>
+                <description>Abase for other temporary directories.</description>
         </property>
    </configuration>  
      ```
